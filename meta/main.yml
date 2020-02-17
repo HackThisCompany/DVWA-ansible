@@ -1,0 +1,22 @@
+galaxy_info:
+  author: Álvaro Torres Cogollo
+  description: Damn Vulnerable Web Application Provisioner
+  company: HackTheCompany
+
+  license: GPL-3.0
+
+  min_ansible_version: 2.9
+
+  platforms:
+  - name: Debian
+    versions:
+    - all
+
+  galaxy_tags:
+    - HackTheCompany
+    - DVWA
+    - Vulnerable
+    - OWASP
+    - PoC
+
+dependencies: []

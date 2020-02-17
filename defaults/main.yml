@@ -1,0 +1,4 @@
+---
+# defaults file for DVWA-ansible
+
+role_actions: []
