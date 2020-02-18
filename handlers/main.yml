@@ -1,2 +1,8 @@
 ---
 # handlers file for DVWA-ansible
+
+- name: Restart apache2
+  systemd:
+    name: apache2
+    state: restarted
+    enabled: yes

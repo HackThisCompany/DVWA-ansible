@@ -1,0 +1,129 @@
+---
+- name: Update packages
+  apt:
+    name: '*'
+    state: latest
+    update_cache: yes
+    force_apt_get: true
+  tags:
+    - DVWA-install
+    - DVWA-install-apt
+    - DVWA-install-apt-update
+
+- name: Install DVWA dependencies
+  apt:
+    pkg:
+      - apache2
+      - mariadb-server
+      - php
+      - php-mysql
+      - php-gd
+      - libapache2-mod-php
+      - unzip
+      - python3-pip
+    force_apt_get: true
+  tags:
+    - DVWA-install
+    - DVWA-install-apt
+    - DVWA-install-apt-install
+
+- name: Install python dependencies
+  pip:
+    name:
+      - PyMySQL
+  tags:
+    - DVWA-install
+    - DVWA-install-python
+
+- name: Deploy DVWA to Apache2 DocumentRoot
+  unarchive:
+    src: '{{ dvwa_url }}'
+    dest: /var/www/html
+    remote_src: yes
+  tags:
+    - DVWA-install
+    - DVWA-install-deploy
+    - DVWA-install-deploy-download
+
+- name: Rename DVWA App
+  shell: |
+    orig=$(ls -d /var/www/html/DVWA-*/ | head -n1)
+    rm -rf /var/www/html/DVWA
+    mv "${orig}" /var/www/html/DVWA
+  tags:
+    - DVWA-install
+    - DVWA-install-deploy
+    - DVWA-install-deploy-rename
+
+- name: Set config
+  template:
+    src: config.inc.php.j2
+    dest: /var/www/html/DVWA/config/config.inc.php
+    owner: www-data
+    group: www-data
+    mode: '0600'
+  tags:
+    - DVWA-install
+    - DVWA-install-deploy
+    - DVWA-install-deploy-config
+
+- name: Ensure folder permissions
+  file:
+    path: '{{ item.path }}'
+    owner: www-data
+    group: www-data
+    mode: '{{ item.mode }}'
+  with_items:
+    - {path: /var/www/html/DVWA/hackable/uploads/, mode: 700}
+    - {path: /var/www/html/DVWA/config, mode: 700}
+    - {path: /var/www/html/DVWA/external/phpids/0.6/lib/IDS/tmp/phpids_log.txt, mode: 600}
+  tags:
+    - DVWA-install
+    - DVWA-install-deploy
+    - DVWA-install-deploy-permissions
+
+- name: Get php.ini fullpath
+  command: find /etc/php/ -path "*/apache2/*" -name "php.ini"
+  register: phpini
+  tags:
+    - DVWA-install
+    - DVWA-install-deploy
+    - DVWA-install-deploy-php
+
+- name: Enable PHP values
+  ini_file:
+    path: '{{ phpini.stdout }}'
+    section: PHP
+    option: '{{ item }}'
+    value: 'On'
+  with_items:
+    - allow_url_fopen
+    - allow_url_include
+  notify:
+    - Restart apache2
+  tags:
+    - DVWA-install
+    - DVWA-install-deploy
+    - DVWA-install-deploy-php
+
+- name: Create database
+  mysql_db:
+    name: '{{ dbname }}'
+    state: present
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+  tags:
+    - DVWA-install
+    - DVWA-install-mysql
+    - DVWA-install-mysql-database
+
+- name: Create user for database
+  mysql_user:
+    name: '{{ dbuser }}'
+    password: '{{ dbpass }}'
+    priv: '{{ dbname }}.*:ALL,GRANT'
+    state: present
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+  tags:
+    - DVWA-install
+    - DVWA-install-mysql
+    - DVWA-install-mysql-user

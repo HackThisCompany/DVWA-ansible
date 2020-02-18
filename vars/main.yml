@@ -1,2 +1,4 @@
 ---
 # vars file for DVWA-ansible
+
+dvwa_url: https://github.com/ethicalhack3r/DVWA/archive/master.zip

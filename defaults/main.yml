@@ -1,4 +1,14 @@
 ---
 # defaults file for DVWA-ansible
 
-role_actions: []
+role_actions:
+  - install
+
+dbname: dvwa
+dbuser: dvwa
+dbpass: _mysupersecurepassw0rd_
+
+#default_security_level: low
+#default_security_level: medium
+#default_security_level: high
+default_security_level: impossible

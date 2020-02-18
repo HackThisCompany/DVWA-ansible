@@ -9,6 +9,10 @@
     - always
 
 - name: 'Include action tasks'
-  include_task: '{{ action }}.yml'
+  include_tasks: '{{ action }}.yml'
+  args:
+    apply:
+      tags:
+        - DVWA
   tags:
     - always
